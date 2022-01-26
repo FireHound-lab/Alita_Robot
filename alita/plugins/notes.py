@@ -65,9 +65,9 @@ async def save_note(_, m: Message):
         return
 
     if (
-        (not m.reply_to_message)
-        and (data_type == Types.TEXT)
-        and (not len(m.command) > 2)
+        not m.reply_to_message
+        and data_type == Types.TEXT
+        and len(m.command) <= 2
     ):
         await m.reply_text(
             f"<code>{m.text}</code>\n\nError: There is no text in here!",
@@ -239,10 +239,7 @@ async def get_raw_note(c: Alita, m: Message, note: str):
             reply_to_message_id=m.message_id,
         )
     else:
-        if getnotes["note_value"]:
-            teks = getnotes["note_value"]
-        else:
-            teks = ""
+        teks = getnotes["note_value"] or ""
         await (await send_cmd(c, msgtype))(
             m.chat.id,
             getnotes["fileid"],
@@ -338,8 +335,7 @@ async def local_notes(_, m: Message):
         await m.reply_text(f"There are no notes in <b>{m.chat.title}</b>.")
         return
 
-    curr_pref = db_settings.get_privatenotes(m.chat.id)
-    if curr_pref:
+    if curr_pref := db_settings.get_privatenotes(m.chat.id):
         from alita import BOT_USERNAME
 
         pm_kb = InlineKeyboardMarkup(
